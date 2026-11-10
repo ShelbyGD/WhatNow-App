@@ -1,0 +1,18 @@
+{
+  "name": "WHAT NOW? – Smarter Freizeit-Kompass",
+  "short_name": "WHAT NOW?",
+  "description": "24+ Ideen gegen Langeweile mit Shake-to-Decide, Mystery-Challenges & Smart-Filtern.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>WHAT NOW? – Smarter Freizeit-Kompass</title>
+  <meta name="description" content="WHAT NOW? v2.2.0 – Deine smarte iPhone Web-App (PWA) gegen Langeweile." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="WHAT NOW?" />
+  <meta name="theme-color" content="#0B0F19" />
+  <link rel="manifest" href="./manifest.json" />
+  <link id="apple-touch-icon-link" rel="apple-touch-icon" href="./icon.svg" />
+  <style>
+    :root, [data-theme="dark"] {
+      --wn-bg: #0b0f19;
+      --wn-surface: #111827;
+      --wn-card: #1e293b;
+      --wn-card-done: rgba(12, 74, 110, 0.45);
+      --wn-border: rgba(148, 163, 184, 0.16);
+      --wn-text: #f1f5f9;
+      --wn-muted: #94a3b8;
+      --wn-primary: #38bdf8;
+      --wn-primary-bg: rgba(56, 189, 248, 0.14);
+      --wn-banner: #132338;
+      --wn-mystery: #2d1e0b;
+      --wn-mystery-text: #fef3c7;
+      --wn-accent: #fbbf24;
+    }
+
+    [data-theme="light"] {
+      --wn-bg: #f8fafc;
+      --wn-surface: #ffffff;
+      --wn-card: #f1f5f9;
+      --wn-card-done: #e0f2fe;
+      --wn-border: rgba(15, 23, 42, 0.12);
+      --wn-text: #0f172a;
+      --wn-muted: #475569;
+      --wn-primary: #0284c7;
+      --wn-primary-bg: rgba(2, 132, 199, 0.12);
+      --wn-banner: #e0f2fe;
+      --wn-mystery: #fef3c7;
+      --wn-mystery-text: #451a03;
+      --wn-accent: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: var(--wn-bg);
+      color: var(--wn-text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 92px;
+    }
+
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--wn-surface);
+      border-bottom: 1px solid var(--wn-border);
+    }
+
+    .top-bar-left, .top-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      border: 1px solid var(--wn-border);
+      background: var(--wn-card);
+      color: var(--wn-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .badge-dot {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--wn-accent);
+      color: #0f172a;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .app-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .app-subtitle {
+      font-size: 12px;
+      margin: 2px 0 0 0;
+      color: var(--wn-primary);
+      font-weight: 600;
+    }
+
+    .main-area {
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .time-banner {
+      background: var(--wn-banner);
+      border: 1px solid var(--wn-border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .time-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--wn-primary);
+      text-transform: uppercase;
+    }
+
+    .time-hint {
+      font-size: 12px;
+      margin: 4px 0 0 0;
+      line-height: 1.4;
+    }
+
+    .small-btn {
+      padding: 7px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--wn-border);
+      background: var(--wn-card);
+      color: var(--wn-text);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 11px 36px 11px 38px;
+      border-radius: 16px;
+      border: 1px solid var(--wn-border);
+      background: var(--wn-card);
+      color: var(--wn-text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--wn-muted);
+      font-size: 14px;
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--wn-muted);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .chip-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip-btn {
+      padding: 7px 13px;
+      border-radius: 12px;
+      border: 1px solid var(--wn-border);
+      background: var(--wn-card);
+      color: var(--wn-text);
+      font-size: 12px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .chip-btn.active {
+      background: var(--wn-primary);
+      color: #082f49;
+      border-color: var(--wn-primary);
+      font-weight: 700;
+    }
+
+    .mystery-card {
+      background: var(--wn-mystery);
+      color: var(--wn-mystery-text);
+      border: 1px solid var(--wn-border);
+      border-radius: 20px;
+      padding: 15px;
+    }
+
+    .activity-card {
+      background: var(--wn-card);
+      border: 1px solid var(--wn-border);
+      border-radius: 20px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .activity-card.done {
+      background: var(--wn-card-done);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .emoji-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--wn-primary-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      flex-shrink: 0;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag-pill {
+      padding: 4px 10px;
+      border-radius: 9px;
+      background: var(--wn-surface);
+      font-size: 12px;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 13px;
+      border: none;
+      background: var(--wn-primary);
+      color: #082f49;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-outline {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 13px;
+      border: 1px solid var(--wn-border);
+      background: var(--wn-surface);
+      color: var(--wn-text);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .fab-btn {
+      position: fixed;
+      right: 18px;
+      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      z-index: 25;
+      padding: 13px 18px;
+      border-radius: 18px;
+      border: none;
+      background: var(--wn-primary);
+      color: #082f49;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(2, 6, 23, 0.65);
+      backdrop-filter: blur(4px);
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 315px;
+      max-width: 86vw;
+      z-index: 45;
+      background: var(--wn-surface);
+      border-right: 1px solid var(--wn-border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-y: auto;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    .drawer-item {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: none;
+      background: transparent;
+      color: var(--wn-text);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .drawer-item.active {
+      background: var(--wn-primary-bg);
+      color: var(--wn-primary);
+    }
+
+    .modal-sheet {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      z-index: 45;
+      background: var(--wn-surface);
+      border-top: 1px solid var(--wn-border);
+      border-radius: 24px 24px 0 0;
+      padding: 20px;
+      padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .center-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% - 32px);
+      max-width: 380px;
+      z-index: 50;
+      background: var(--wn-surface);
+      border: 1px solid var(--wn-border);
+      border-radius: 24px;
+      padding: 20px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <div class="app-shell">
+    <!-- Top App Bar (Hamburger oben links, KEIN Zahnrad oben rechts) -->
+    <header class="top-bar">
+      <div class="top-bar-left">
+        <button class="icon-btn" onclick="toggleDrawer(true)" aria-label="Menü öffnen">☰</button>
+        <div>
+          <h1 class="app-title">WHAT NOW?</h1>
+          <p id="header-subtitle" class="app-subtitle">24 Ideen gegen Langeweile</p>
+        </div>
+      </div>
+      <div class="top-bar-right">
+        <button class="icon-btn" onclick="toggleFilterSheet(true)" aria-label="Smart-Filter">
+          🎛️
+          <span id="filter-badge" class="badge-dot hidden">0</span>
+        </button>
+        <button class="icon-btn" onclick="toggleAddModal(true)" aria-label="Eigene Idee hinzufügen">＋</button>
+      </div>
+    </header>
+
+    <main class="main-area">
+      <!-- Tageszeit-Banner -->
+      <section class="time-banner">
+        <div>
+          <div id="time-title" class="time-title">☀️ Tages-Power</div>
+          <p id="time-hint" class="time-hint">Ideal für Ausflüge, Sport, Freunde oder Entdeckungen draußen.</p>
+        </div>
+        <button id="time-filter-btn" class="small-btn" onclick="toggleSmartTimeMode()">Filtern</button>
+      </section>
+
+      <!-- Suchfeld -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input id="search-input" class="search-input" type="text"
+               placeholder="Aktivität, Thema oder Ort suchen..."
+               oninput="handleSearch(this.value)" />
+        <button id="clear-search-btn" class="search-clear hidden" onclick="clearSearch()">✕</button>
+      </div>
+
+      <!-- Schnellfilter-Chips -->
+      <div id="category-chips" class="chip-row"></div>
+
+      <!-- Blind-Date Mystery-Card -->
+      <section id="mystery-card" class="mystery-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <strong style="font-size:14px;">🎁 Blind-Date Freizeit-Challenge</strong>
+          <button class="small-btn" onclick="nextMysteryChallenge()">🔄 Neu</button>
+        </div>
+        <div id="mystery-body" style="margin-top:8px;"></div>
+      </section>
+
+      <!-- Aktivitäten-Liste -->
+      <div id="activities-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab-btn" onclick="triggerRandomIdea()">
+      <span>🎲</span>
+      <span>Überrasch mich!</span>
+    </button>
+  </div>
+
+  <!-- HAMBURGER-MENÜ LINKS -->
+  <div id="drawer-wrapper" class="hidden">
+    <div class="overlay" onclick="toggleDrawer(false)"></div>
+    <aside class="drawer">
+      <div>
+        <div style="padding:20px;background:var(--wn-banner);border-bottom:1px solid var(--wn-border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="./icon.svg" alt="WHAT NOW Icon" style="width:48px;height:48px;border-radius:14px;" />
+              <div>
+                <div style="font-size:16px;font-weight:800;">WHAT NOW?</div>
+                <div style="font-size:12px;color:var(--wn-primary);">iPhone & Web Edition</div>
+              </div>
+            </div>
+            <button class="small-btn" onclick="toggleDrawer(false)">✕</button>
+          </div>
+          <div style="margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px;">
+              <span>Bucket-List Fortschritt</span>
+              <strong id="drawer-progress-label">0 / 24</strong>
+            </div>
+            <div style="height:6px;border-radius:4px;background:rgba(255,255,255,0.14);overflow:hidden;">
+              <div id="drawer-progress-bar" style="height:100%;width:0%;background:var(--wn-primary);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px;">
+          <div style="font-size:11px;font-weight:800;color:var(--wn-primary);padding:4px 10px;">ANSICHTEN</div>
+          <button class="drawer-item" onclick="setViewMode('ALL')">
+            <span>🧭 Alle Ideen entdecken</span>
+            <span id="count-all">24</span>
+          </button>
+          <button class="drawer-item" onclick="setViewMode('SMART_TIME')">
+            <span>☀️ Passend zur Tageszeit</span>
+          </button>
+          <button class="drawer-item" onclick="setViewMode('FAVORITES')">
+            <span>❤️ Meine Favoriten</span>
+            <span id="count-fav">0</span>
+          </button>
+          <button class="drawer-item" onclick="setViewMode('COMPLETED')">
+            <span>✅ Erledigte Aktivitäten</span>
+            <span id="count-done">0</span>
+          </button>
+
+          <hr style="border:none;border-top:1px solid var(--wn-border);margin:10px 0;" />
+          <div style="font-size:11px;font-weight:800;color:var(--wn-primary);padding:4px 10px;">SMARTE TOOLS</div>
+          <button class="drawer-item" onclick="toggleDrawer(false);triggerRandomIdea();">
+            <span>🎲 Zufalls-Generator starten</span>
+          </button>
+          <button class="drawer-item" onclick="toggleDrawer(false);toggleAddModal(true);">
+            <span>💡 Eigene Idee hinzufügen</span>
+          </button>
+          <button class="drawer-item" onclick="toggleDrawer(false);toggleFilterSheet(true);">
+            <span>🎛️ Smart-Filter öffnen</span>
+          </button>
+          <button class="drawer-item" onclick="resetFilters();toggleDrawer(false);">
+            <span>🔄 Alle Filter zurücksetzen</span>
+          </button>
+
+          <hr style="border:none;border-top:1px solid var(--wn-border);margin:10px 0;" />
+          <div style="font-size:11px;font-weight:800;color:var(--wn-primary);padding:4px 10px;">DARSTELLUNG & IPHONE</div>
+          <button class="drawer-item" onclick="toggleTheme()" style="background:var(--wn-card);">
+            <span id="theme-menu-label">🌙 Dunkles Design aktiv</span>
+            <span style="font-size:11px;color:var(--wn-primary);">Wechseln</span>
+          </button>
+          <button class="drawer-item" onclick="enableiPhoneShake()">
+            <span>📳 iPhone Shake-Sensor</span>
+            <span id="shake-status-badge" style="font-size:11px;color:var(--wn-primary);">Aktivieren</span>
+          </button>
+          <button class="drawer-item" onclick="toggleMysteryVisibility()">
+            <span>🎁 Blind-Date Challenge</span>
+            <span id="mystery-status-badge" style="font-size:11px;">Ein</span>
+          </button>
+          <button class="drawer-item" onclick="toggleDrawer(false);toggleiPhoneInstallModal(true);">
+            <span>📲 Auf iPhone zum Home-Bildschirm</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dezente Versionsnummer ganz unten im Menü -->
+      <div style="padding:14px;text-align:center;border-top:1px solid var(--wn-border);">
+        <span style="font-size:11px;opacity:0.55;">WHAT NOW? • Version v2.2.0</span>
+      </div>
+    </aside>
+  </div>
+
+  <!-- FILTER SHEET -->
+  <div id="filter-sheet-wrapper" class="hidden">
+    <div class="overlay" onclick="toggleFilterSheet(false)"></div>
+    <div class="modal-sheet">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <strong style="font-size:16px;">🎛️ Smarte Filter</strong>
+        <button class="small-btn" onclick="resetFilters()">🔄 Reset</button>
+      </div>
+      <div id="filter-sheet-content" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <button class="btn-primary" style="width:100%;margin-top:16px;padding:13px;" onclick="toggleFilterSheet(false)">
+        Ergebnisse anzeigen
+      </button>
+    </div>
+  </div>
+
+  <!-- RANDOM IDEA MODAL -->
+  <div id="random-modal-wrapper" class="hidden">
+    <div class="overlay" onclick="closeRandomModal()"></div>
+    <div id="random-modal-card" class="center-modal"></div>
+  </div>
+
+  <!-- ADD IDEA MODAL -->
+  <div id="add-modal-wrapper" class="hidden">
+    <div class="overlay" onclick="toggleAddModal(false)"></div>
+    <div class="center-modal" style="display:flex;flex-direction:column;gap:10px;">
+      <strong style="font-size:16px;">💡 Eigene Aktivität speichern</strong>
+      <div style="display:flex;gap:8px;">
+        <input id="add-emoji" class="search-input" style="width:64px;padding:10px;text-align:center;" value="💡" maxlength="4" />
+        <input id="add-title" class="search-input" style="flex:1;padding:10px;" placeholder="Titel der Idee *" />
+      </div>
+      <input id="add-desc" class="search-input" style="padding:10px;" placeholder="Kurzbeschreibung" />
+      <input id="add-maps" class="search-input" style="padding:10px;" placeholder="Maps Suchbegriff (optional)" />
+      <div style="display:flex;gap:8px;">
+        <select id="add-cat" class="search-input" style="flex:1;padding:10px;">
+          <option value="Draußen">Draußen</option>
+          <option value="Zuhause">Zuhause</option>
+          <option value="Freunde">Freunde</option>
+          <option value="Kultur & City">Kultur & City</option>
+        </select>
+        <select id="add-duration" class="search-input" style="flex:1;padding:10px;">
+          <option value="15 Min">15 Min</option>
+          <option value="30 Min">30 Min</option>
+          <option value="1-2 Std" selected>1-2 Std</option>
+          <option value="Halber Tag">Halber Tag</option>
+        </select>
+      </div>
+      <div class="action-row" style="margin-top:6px;">
+        <button class="btn-outline" onclick="toggleAddModal(false)">Abbrechen</button>
+        <button class="btn-primary" onclick="saveCustomActivity()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IPHONE INSTALL GUIDE MODAL -->
+  <div id="iphone-modal-wrapper" class="hidden">
+    <div class="overlay" onclick="toggleiPhoneInstallModal(false)"></div>
+    <div class="center-modal" style="display:flex;flex-direction:column;gap:10px;">
+      <strong style="font-size:16px;">📲 Auf dem iPhone installieren</strong>
+      <p style="font-size:12px;line-height:1.5;color:var(--wn-muted);margin:0;">
+        So fügst du <strong>WHAT NOW?</strong> mit eigenem App-Icon (ohne weißen Hintergrund) als Vollbild-App auf deinem iPhone hinzu:
+      </p>
+      <ol style="font-size:12px;line-height:1.6;padding-left:18px;margin:0;">
+        <li>Öffne diese Seite in <strong>Safari</strong> auf dem iPhone.</li>
+        <li>Tippe unten auf das <strong>Teilen-Icon</strong> (Quadrat mit Pfeil nach oben).</li>
+        <li>Wähle <strong>„Zum Home-Bildschirm“</strong> und tippe auf <strong>Hinzufügen</strong>.</li>
+      </ol>
+      <button class="btn-primary" style="margin-top:6px;" onclick="toggleiPhoneInstallModal(false)">Alles klar!</button>
+    </div>
+  </div>
+
+  <script>
+    const INITIAL_ACTIVITIES = [
+      { id: 1, titel: "Spaziergang im Grünen", kategorie: "Draußen", dauer: "30 Min", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Entspannung", mapsQuery: "Park in der Nähe", emoji: "🌳", beschreibung: "Frische Luft tanken, Handy wegstecken und eine neue Route im Park entdecken.", energieLevel: "Mittel" },
+      { id: 2, titel: "Brettspiel- & Karten-Abend", kategorie: "Zuhause", dauer: "1-2 Std", budget: "Kostenlos", wetter: "Egal", ort: "Zuhause", zielgruppe: "Kinder & Familie", interesse: "Action", mapsQuery: "Spieleladen", emoji: "🎲", beschreibung: "Klassiker oder Kartenspiele herausholen und ein kleines Turnier starten.", energieLevel: "Ruhig" },
+      { id: 3, titel: "Kaffee & Kuchen im neuen Café", kategorie: "Freunde", dauer: "1-2 Std", budget: "Max 5 €", wetter: "Egal", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Genuss", mapsQuery: "Gemütliches Café", emoji: "☕", beschreibung: "Ein Café testen, in dem du noch nie warst, und das Lieblingsgetränk genießen.", energieLevel: "Ruhig" },
+      { id: 4, titel: "Fahrradtour zur Eisdiele", kategorie: "Draußen", dauer: "1-2 Std", budget: "Max 5 €", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Kinder & Familie", interesse: "Sport", mapsQuery: "Eisdiele", emoji: "🚲", beschreibung: "Schöne Radstrecke fahren und sich am Ziel zwei Kugeln Lieblingseis gönnen.", energieLevel: "Aktiv" },
+      { id: 5, titel: "Film-Marathon & Heimkino", kategorie: "Zuhause", dauer: "Halber Tag", budget: "Kostenlos", wetter: "Regen", ort: "Zuhause", zielgruppe: "Alle", interesse: "Entspannung", mapsQuery: "Kino", emoji: "🍿", beschreibung: "Popcorn machen, Licht dimmen und eine Filmreihe oder einen Klassiker schauen.", energieLevel: "Ruhig" },
+      { id: 6, titel: "Geocaching Schatzsuche", kategorie: "Draußen", dauer: "1-2 Std", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Kinder & Familie", interesse: "Action", mapsQuery: "Sehenswürdigkeit Park", emoji: "🧭", beschreibung: "Versteckte Caches in deiner Nachbarschaft per GPS aufspüren und loggen.", energieLevel: "Aktiv" },
+      { id: 7, titel: "Urban Sketching & Zeichnen", kategorie: "Zuhause", dauer: "30 Min", budget: "Kostenlos", wetter: "Egal", ort: "Zuhause", zielgruppe: "Alle", interesse: "Kreativ", mapsQuery: "Künstlerbedarf", emoji: "🎨", beschreibung: "Stift & Papier schnappen: Zeichne den Blick aus deinem Fenster oder ein Comic.", energieLevel: "Ruhig" },
+      { id: 8, titel: "Bowling-Match mit Freunden", kategorie: "Freunde", dauer: "1-2 Std", budget: "Max 20 €", wetter: "Egal", ort: "In der Nähe", zielgruppe: "Teens", interesse: "Action", mapsQuery: "Bowlingcenter", emoji: "🎳", beschreibung: "Wer wirft die meisten Strikes? Perfekt für Regentage oder den Abend.", energieLevel: "Mittel" },
+      { id: 9, titel: "Power-Workout oder Mobility-Flow", kategorie: "Zuhause", dauer: "15 Min", budget: "Kostenlos", wetter: "Egal", ort: "Zuhause", zielgruppe: "Alle", interesse: "Sport", mapsQuery: "Calisthenics Park", emoji: "🧘", beschreibung: "15 Minuten Stretching, Yoga oder Bodyweight-Übungen mit Lieblingsmusik.", energieLevel: "Aktiv" },
+      { id: 10, titel: "Stadtbibliothek & Buch-Entdeckung", kategorie: "Kultur & City", dauer: "1-2 Std", budget: "Kostenlos", wetter: "Regen", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Wissen", mapsQuery: "Stadtbibliothek Buchhandlung", emoji: "📚", beschreibung: "Durch Regale stöbern, in ein neues Genre reinlesen und Ruhe genießen.", energieLevel: "Ruhig" },
+      { id: 11, titel: "Golden-Hour Foto-Safari", kategorie: "Draußen", dauer: "30 Min", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Teens", interesse: "Kreativ", mapsQuery: "Aussichtspunkt", emoji: "📸", beschreibung: "Mach 10 außergewöhnliche Fotos von Spiegelungen, Architektur oder Natur.", energieLevel: "Mittel" },
+      { id: 12, titel: "Kühlschrank-Roulette Kochen", kategorie: "Zuhause", dauer: "30 Min", budget: "Kostenlos", wetter: "Egal", ort: "Zuhause", zielgruppe: "Alle", interesse: "Genuss", mapsQuery: "Wochenmarkt Hofladen", emoji: "👨‍🍳", beschreibung: "Zaubere ein kreatives Gericht nur aus Zutaten, die schon zu Hause sind.", energieLevel: "Mittel" },
+      { id: 13, titel: "Tischtennis-Duell im Park", kategorie: "Freunde", dauer: "30 Min", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Sport", mapsQuery: "Tischtennisplatte Park", emoji: "🏓", beschreibung: "Schnelles Match an einer öffentlichen Platte oder Rundlauf mit Freunden.", energieLevel: "Aktiv" },
+      { id: 14, titel: "Bouldern & Klettern", kategorie: "Freunde", dauer: "1-2 Std", budget: "Max 20 €", wetter: "Egal", ort: "In der Nähe", zielgruppe: "Erwachsene", interesse: "Sport", mapsQuery: "Boulderhalle Kletterhalle", emoji: "🧗", beschreibung: "Kombiniere Kraft und Köpfchen an spannenden Boulder-Routen.", energieLevel: "Aktiv" },
+      { id: 15, titel: "Flohmarkt oder Second-Hand Schatzjagd", kategorie: "Kultur & City", dauer: "1-2 Std", budget: "Max 5 €", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Kreativ", mapsQuery: "Flohmarkt Second Hand Laden", emoji: "🏺", beschreibung: "Stöbere nach kuriosen Vintage-Schätzen, Schallplatten oder Büchern.", energieLevel: "Mittel" },
+      { id: 16, titel: "Picknick beim Sonnenuntergang", kategorie: "Draußen", dauer: "1-2 Std", budget: "Max 5 €", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Erwachsene", interesse: "Genuss", mapsQuery: "Seeufer Aussichtspunkt Park", emoji: "🧺", beschreibung: "Decke und Lieblingssnacks einpacken und den Abendhimmel beobachten.", energieLevel: "Ruhig" },
+      { id: 17, titel: "Wohnzimmer-Escape-Game / Rätsel", kategorie: "Zuhause", dauer: "1-2 Std", budget: "Kostenlos", wetter: "Regen", ort: "Zuhause", zielgruppe: "Kinder & Familie", interesse: "Wissen", mapsQuery: "Escape Room", emoji: "🔐", beschreibung: "Verstecke Hinweise in der Wohnung oder löst gemeinsam ein Krimi-Rätsel.", energieLevel: "Mittel" },
+      { id: 18, titel: "Minigolf oder Adventure-Golf", kategorie: "Freunde", dauer: "1-2 Std", budget: "Max 20 €", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Kinder & Familie", interesse: "Action", mapsQuery: "Minigolf Schwarzlicht Minigolf", emoji: "⛳", beschreibung: "Draußen im Grünen oder drinnen bei Schwarzlicht den Bahnrekord knacken.", energieLevel: "Mittel" },
+      { id: 19, titel: "15-Minuten Speed-Aufräum-Challenge", kategorie: "Zuhause", dauer: "15 Min", budget: "Kostenlos", wetter: "Egal", ort: "Zuhause", zielgruppe: "Alle", interesse: "Action", mapsQuery: "Recyclinghof Verschenkemarkt", emoji: "⚡", beschreibung: "Timer auf 15 Minuten, Lieblings-Songs laut aufdrehen und eine Ecke komplett befreien!", energieLevel: "Aktiv" },
+      { id: 20, titel: "Museum, Galerie oder Ausstellung", kategorie: "Kultur & City", dauer: "1-2 Std", budget: "Max 20 €", wetter: "Regen", ort: "In der Nähe", zielgruppe: "Erwachsene", interesse: "Wissen", mapsQuery: "Museum Kunstgalerie", emoji: "🏛️", beschreibung: "Lass dich von Technik, Geschichte oder moderner Kunst in deiner Stadt inspirieren.", energieLevel: "Ruhig" },
+      { id: 21, titel: "Sternenhimmel & Satelliten spotten", kategorie: "Draußen", dauer: "30 Min", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Wissen", mapsQuery: "Sternwarte Anhöhe", emoji: "🌌", beschreibung: "Abends einen dunklen Ort suchen und Sternbilder oder die ISS am Himmel entdecken.", energieLevel: "Ruhig" },
+      { id: 22, titel: "Streetfood- oder Wochenmarkt-Tour", kategorie: "Kultur & City", dauer: "1-2 Std", budget: "Max 20 €", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Genuss", mapsQuery: "Streetfood Wochenmarkt", emoji: "🌮", beschreibung: "Probiere eine Spezialität aus einer Küche, die du noch nie gegessen hast.", energieLevel: "Mittel" },
+      { id: 23, titel: "Origami, DIY oder Upcycling-Projekt", kategorie: "Zuhause", dauer: "30 Min", budget: "Kostenlos", wetter: "Regen", ort: "Zuhause", zielgruppe: "Kinder & Familie", interesse: "Kreativ", mapsQuery: "Baumarkt Bastelladen", emoji: "✂️", beschreibung: "Aus Papier, Gläsern oder Holz etwas Neues für den Schreibtisch oder die Wohnung bauen.", energieLevel: "Ruhig" },
+      { id: 24, titel: "Tagesausflug zum Naturpfad oder See", kategorie: "Draußen", dauer: "Halber Tag", budget: "Kostenlos", wetter: "Sonnig", ort: "In der Nähe", zielgruppe: "Alle", interesse: "Sport", mapsQuery: "Badesee Wanderweg Naturpfad", emoji: "🥾", beschreibung: "Rucksack packen, raus aus dem Alltag und ein neues Naturgebiet erkunden.", energieLevel: "Aktiv" }
+    ];
+
+    const MYSTERY_CHALLENGES = [
+      { titel: "Kompass-Zufallstour", rahmen: "30 Min | Kostenlos | Draußen", aufgabe: "✨ Geh vor die Tür und biege an den nächsten 5 Kreuzungen abwechselnd links und rechts ab. Entdecke einen Ort, den du noch nie bewusst gesehen hast!", mapsQuery: "Sehenswürdigkeit in der Nähe" },
+      { titel: "Farben-Foto-Safari", rahmen: "15 Min | Kostenlos | Überall", aufgabe: "📸 Suche in deiner Umgebung 5 spannende Motive in genau einer Signalfarbe (z. B. Gelb oder Türkis) und erstelle daraus eine kreative Collage!", mapsQuery: "Street Art Aussichtspunkt" },
+      { titel: "Analog-Detox-Stunde", rahmen: "1 Std | Kostenlos | Zuhause", aufgabe: "🕯️ Handy in den Flugmodus! Mach dir ein heißes Getränk, leg deine Lieblingsmusik auf und skizziere 3 Dinge, auf die du dich diesen Monat freust.", mapsQuery: "Teeladen Buchhandlung" },
+      { titel: "5-Euro-Kulinarik-Challenge", rahmen: "30 Min | Max 5 € | In der Nähe", aufgabe: "🥐 Geh in eine Bäckerei oder einen kleinen Laden und kaufe genau eine Spezialität unter 5 €, die du noch nie zuvor probiert hast!", mapsQuery: "Bäckerei Feinkost" },
+      { titel: "Spontan-Freude-Mission", rahmen: "15 Min | Kostenlos | Freunde", aufgabe: "💌 Schreib einer Person, von der du lange nichts gehört hast, eine echte Sprachnachricht oder schlage ein spontanes Treffen für diese Woche vor!", mapsQuery: "Eiscafé Park" }
+    ];
+
+    const state = {
+      theme: localStorage.getItem("wn_theme") || "dark",
+      favorites: JSON.parse(localStorage.getItem("wn_favs") || "[]"),
+      completed: JSON.parse(localStorage.getItem("wn_done") || "[]"),
+      custom: JSON.parse(localStorage.getItem("wn_custom") || "[]"),
+      viewMode: "ALL",
+      search: "",
+      kategorie: "Alle",
+      dauer: "Alle",
+      budget: "Alle",
+      wetter: "Egal",
+      zielgruppe: "Alle",
+      energie: "Alle",
+      mysteryRevealed: false,
+      mysteryIndex: 0,
+      showMystery: true
+    };
+
+    function getAllActivities() {
+      return [...state.custom, ...INITIAL_ACTIVITIES];
+    }
+
+    function isRecommendedForTime(item) {
+      const h = new Date().getHours();
+      if (h >= 5 && h <= 11) return item.energieLevel === "Aktiv" || item.kategorie === "Draußen" || item.interesse === "Genuss";
+      if (h >= 12 && h <= 17) return item.kategorie === "Draußen" || item.kategorie === "Freunde" || item.kategorie === "Kultur & City";
+      if (h >= 18 && h <= 21) return item.kategorie === "Freunde" || item.kategorie === "Zuhause" || item.energieLevel !== "Aktiv";
+      return item.ort === "Zuhause" || item.energieLevel === "Ruhig";
+    }
+
+    function updateTimeBanner() {
+      const h = new Date().getHours();
+      const titleEl = document.getElementById("time-title");
+      const hintEl = document.getElementById("time-hint");
+      if (h >= 5 && h <= 11) {
+        titleEl.textContent = "🌅 Guten Morgen! Morgen-Frische";
+        hintEl.textContent = "Perfekt für Bewegung, frische Luft oder ein gemütliches Café!";
+      } else if (h >= 12 && h <= 17) {
+        titleEl.textContent = "☀️ Hallo! Volle Tages-Power";
+        hintEl.textContent = "Ideal für Ausflüge, Sport, Freunde oder Entdeckungen draußen.";
+      } else if (h >= 18 && h <= 21) {
+        titleEl.textContent = "🌆 Guten Abend! Feierabend-Modus";
+        hintEl.textContent = "Zeit für Freunde, gutes Essen, Spiele oder Sonnenuntergang.";
+      } else {
+        titleEl.textContent = "🌙 Nacht-Eule! Späte Inspiration";
+        hintEl.textContent = "Gemütlich zu Hause, Filme, Kreatives oder Sternegucken.";
+      }
+    }
+
+    function getFilteredActivities() {
+      const q = state.search.trim().toLowerCase();
+      return getAllActivities().filter(item => {
+        const matchQ = !q || item.titel.toLowerCase().includes(q) || item.beschreibung.toLowerCase().includes(q) || item.interesse.toLowerCase().includes(q);
+        const matchView =
+          state.viewMode === "ALL" ? true :
+          state.viewMode === "SMART_TIME" ? isRecommendedForTime(item) :
+          state.viewMode === "FAVORITES" ? state.favorites.includes(item.id) :
+          state.completed.includes(item.id);
+        const matchKat = state.kategorie === "Alle" || item.kategorie === state.kategorie;
+        const matchDauer = state.dauer === "Alle" || item.dauer === state.dauer;
+        const matchBudget = state.budget === "Alle" || item.budget === state.budget;
+        const matchWetter = state.wetter === "Egal" || item.wetter === "Egal" || item.wetter === state.wetter;
+        const matchZiel = state.zielgruppe === "Alle" || item.zielgruppe === "Alle" || item.zielgruppe === state.zielgruppe;
+        const matchEnergie = state.energie === "Alle" || item.energieLevel === state.energie;
+        return matchQ && matchView && matchKat && matchDauer && matchBudget && matchWetter && matchZiel && matchEnergie;
+      });
+    }
+
+    function renderCategoryChips() {
+      const container = document.getElementById("category-chips");
+      const cats = ["Alle", "Draußen", "Zuhause", "Freunde", "Kultur & City"];
+      let html = cats.map(c =>
+        `<button onclick="setKategorie('${c}')" class="chip-btn ${state.kategorie === c ? 'active' : ''}">${c}</button>`
+      ).join("");
+      html += `<button onclick="toggleQuickBudget()" class="chip-btn ${state.budget === 'Kostenlos' ? 'active' : ''}">💸 Kostenlos</button>`;
+      html += `<button onclick="toggleQuickDuration()" class="chip-btn ${state.dauer === '30 Min' ? 'active' : ''}">⚡ 30 Min</button>`;
+      container.innerHTML = html;
+    }
+
+    function renderMysteryCard() {
+      const card = document.getElementById("mystery-card");
+      if (!state.showMystery || state.viewMode !== "ALL" || state.search.trim() !== "") {
+        card.classList.add("hidden");
+        return;
+      }
+      card.classList.remove("hidden");
+      const current = MYSTERY_CHALLENGES[state.mysteryIndex % MYSTERY_CHALLENGES.length];
+      const body = document.getElementById("mystery-body");
+      if (!state.mysteryRevealed) {
+        body.innerHTML = `
+          <p style="font-size:12px;margin:0 0 10px 0;">Lass dich überraschen! Rahmen: <strong>${current.rahmen}</strong></p>
+          <button class="btn-primary" style="width:100%;background:var(--wn-accent);color:#0f172a;" onclick="revealMystery()">
+            ✨ Challenge annehmen & aufdecken!
+          </button>
+        `;
+      } else {
+        body.innerHTML = `
+          <div style="font-size:12px;font-weight:800;margin-bottom:4px;">${current.titel} (${current.rahmen})</div>
+          <p style="font-size:12px;line-height:1.45;margin:0 0 10px 0;">${current.aufgabe}</p>
+          <div class="action-row">
+            <button class="btn-outline" onclick="nextMysteryChallenge()">🎲 Andere</button>
+            <button class="btn-primary" style="background:var(--wn-accent);color:#0f172a;" onclick="openMaps('${current.mapsQuery}')">📍 Ort suchen</button>
+          </div>
+        `;
+      }
+    }
+
+    function renderActivities() {
+      const listEl = document.getElementById("activities-list");
+      const filtered = getFilteredActivities();
+      const all = getAllActivities();
+
+      document.getElementById("header-subtitle").textContent =
+        state.viewMode === "ALL" ? `${filtered.length} Ideen gegen Langeweile` :
+        state.viewMode === "SMART_TIME" ? `Passend zur Tageszeit (${filtered.length})` :
+        state.viewMode === "FAVORITES" ? `Deine Favoriten (${filtered.length})` :
+        `Erledigte Bucket-List (${filtered.length})`;
+
+      document.getElementById("count-all").textContent = all.length;
+      document.getElementById("count-fav").textContent = state.favorites.length;
+      document.getElementById("count-done").textContent = state.completed.length;
+      document.getElementById("drawer-progress-label").textContent = `${state.completed.length} / ${all.length}`;
+      const pct = all.length ? Math.round((state.completed.length / all.length) * 100) : 0;
+      document.getElementById("drawer-progress-bar").style.width = `${pct}%`;
+
+      document.getElementById("time-filter-btn").textContent =
+        state.viewMode === "SMART_TIME" ? "Alle zeigen" : "Filtern";
+
+      const activeFilters = [
+        state.kategorie !== "Alle",
+        state.dauer !== "Alle",
+        state.budget !== "Alle",
+        state.wetter !== "Egal",
+        state.zielgruppe !== "Alle",
+        state.energie !== "Alle"
+      ].filter(Boolean).length;
+      const badge = document.getElementById("filter-badge");
+      if (activeFilters > 0) {
+        badge.textContent = activeFilters;
+        badge.classList.remove("hidden");
+      } else {
+        badge.classList.add("hidden");
+      }
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="activity-card" style="text-align:center;padding:24px;">
+            <strong style="font-size:15px;">🔍 Keine passende Aktivität gefunden</strong>
+            <p style="font-size:12px;color:var(--wn-muted);margin:4px 0 12px 0;">Setze die Filter zurück oder füge deine eigene Freizeit-Idee hinzu.</p>
+            <button class="btn-primary" onclick="resetFilters()">Alle Filter zurücksetzen</button>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(item => {
+        const isFav = state.favorites.includes(item.id);
+        const isDone = state.completed.includes(item.id);
+        return `
+          <article class="activity-card ${isDone ? 'done' : ''}">
+            <div class="card-header">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="emoji-circle">${item.emoji}</div>
+                <div>
+                  <div style="font-size:15px;font-weight:800;">${item.titel}</div>
+                  <div style="font-size:12px;color:var(--wn-primary);font-weight:600;">${item.kategorie} • ${item.interesse}</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="icon-btn" style="width:34px;height:34px;" onclick="toggleCompleted(${item.id})">${isDone ? '✅' : '⬜'}</button>
+                <button class="icon-btn" style="width:34px;height:34px;" onclick="toggleFavorite(${item.id})">${isFav ? '❤️' : '🤍'}</button>
+              </div>
+            </div>
+            <p style="font-size:12px;color:var(--wn-muted);margin:0;line-height:1.45;">${item.beschreibung}</p>
+            <div class="tag-row">
+              <span class="tag-pill">⏱️ ${item.dauer}</span>
+              <span class="tag-pill">💶 ${item.budget}</span>
+              <span class="tag-pill">👥 ${item.zielgruppe}</span>
+              <span class="tag-pill">⚡ ${item.energieLevel}</span>
+            </div>
+            <div class="action-row">
+              ${item.ort !== 'Zuhause' ? `<button class="btn-primary" onclick="openMaps('${item.mapsQuery.replace(/'/g, "\\'")}')">📍 In der Nähe</button>` : ''}
+              <button class="btn-outline" onclick="shareActivity(${item.id})">📤 Einladen</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderFilterSheet() {
+      const container = document.getElementById("filter-sheet-content");
+      const sections = [
+        { label: "⏱️ Zeitfenster", key: "dauer", options: ["Alle", "15 Min", "30 Min", "1-2 Std", "Halber Tag"] },
+        { label: "💶 Budget", key: "budget", options: ["Alle", "Kostenlos", "Max 5 €", "Max 20 €"] },
+        { label: "🌦️ Wetter", key: "wetter", options: ["Egal", "Sonnig", "Regen"] },
+        { label: "👥 Zielgruppe", key: "zielgruppe", options: ["Alle", "Kinder & Familie", "Teens", "Erwachsene"] },
+        { label: "⚡ Energie-Level", key: "energie", options: ["Alle", "Ruhig", "Mittel", "Aktiv"] }
+      ];
+      container.innerHTML = sections.map(sec => `
+        <div>
+          <div style="font-size:12px;font-weight:800;color:var(--wn-primary);margin-bottom:6px;">${sec.label}</div>
+          <div class="chip-row">
+            ${sec.options.map(opt => `
+              <button onclick="setFilter('${sec.key}', '${opt}')" class="chip-btn ${state[sec.key] === opt ? 'active' : ''}">${opt}</button>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function applyTheme() {
+      document.body.setAttribute("data-theme", state.theme);
+      document.getElementById("theme-menu-label").textContent =
+        state.theme === "dark" ? "🌙 Dunkles Design aktiv" : "☀️ Helles Design aktiv";
+    }
+
+    function toggleTheme() {
+      state.theme = state.theme === "dark" ? "light" : "dark";
+      localStorage.setItem("wn_theme", state.theme);
+      applyTheme();
+    }
+
+    function toggleDrawer(open) {
+      document.getElementById("drawer-wrapper").classList.toggle("hidden", !open);
+    }
+
+    function toggleFilterSheet(open) {
+      if (open) renderFilterSheet();
+      document.getElementById("filter-sheet-wrapper").classList.toggle("hidden", !open);
+    }
+
+    function toggleAddModal(open) {
+      document.getElementById("add-modal-wrapper").classList.toggle("hidden", !open);
+    }
+
+    function toggleiPhoneInstallModal(open) {
+      document.getElementById("iphone-modal-wrapper").classList.toggle("hidden", !open);
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      toggleDrawer(false);
+      renderAll();
+    }
+
+    function toggleSmartTimeMode() {
+      state.viewMode = state.viewMode === "SMART_TIME" ? "ALL" : "SMART_TIME";
+      renderAll();
+    }
+
+    function setKategorie(kat) {
+      state.kategorie = kat;
+      renderAll();
+    }
+
+    function toggleQuickBudget() {
+      state.budget = state.budget === "Kostenlos" ? "Alle" : "Kostenlos";
+      renderAll();
+    }
+
+    function toggleQuickDuration() {
+      state.dauer = state.dauer === "30 Min" ? "Alle" : "30 Min";
+      renderAll();
+    }
+
+    function setFilter(key, val) {
+      state[key] = val;
+      renderFilterSheet();
+      renderAll();
+    }
+
+    function handleSearch(val) {
+      state.search = val;
+      document.getElementById("clear-search-btn").classList.toggle("hidden", !val);
+      renderAll();
+    }
+
+    function clearSearch() {
+      document.getElementById("search-input").value = "";
+      handleSearch("");
+    }
+
+    function resetFilters() {
+      state.search = "";
+      document.getElementById("search-input").value = "";
+      document.getElementById("clear-search-btn").classList.add("hidden");
+      state.viewMode = "ALL";
+      state.kategorie = "Alle";
+      state.dauer = "Alle";
+      state.budget = "Alle";
+      state.wetter = "Egal";
+      state.zielgruppe = "Alle";
+      state.energie = "Alle";
+      renderFilterSheet();
+      renderAll();
+    }
+
+    function revealMystery() {
+      state.mysteryRevealed = true;
+      renderMysteryCard();
+    }
+
+    function nextMysteryChallenge() {
+      state.mysteryRevealed = true;
+      state.mysteryIndex = (state.mysteryIndex + 1) % MYSTERY_CHALLENGES.length;
+      renderMysteryCard();
+    }
+
+    function toggleMysteryVisibility() {
+      state.showMystery = !state.showMystery;
+      document.getElementById("mystery-status-badge").textContent = state.showMystery ? "Ein" : "Aus";
+      renderMysteryCard();
+    }
+
+    function toggleFavorite(id) {
+      if (state.favorites.includes(id)) {
+        state.favorites = state.favorites.filter(x => x !== id);
+      } else {
+        state.favorites.push(id);
+      }
+      localStorage.setItem("wn_favs", JSON.stringify(state.favorites));
+      renderActivities();
+    }
+
+    function toggleCompleted(id) {
+      if (state.completed.includes(id)) {
+        state.completed = state.completed.filter(x => x !== id);
+      } else {
+        state.completed.push(id);
+      }
+      localStorage.setItem("wn_done", JSON.stringify(state.completed));
+      renderActivities();
+    }
+
+    function openMaps(query) {
+      window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, "_blank", "noopener");
+    }
+
+    async function shareActivity(id) {
+      const item = getAllActivities().find(x => x.id === id);
+      if (!item) return;
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.mapsQuery)}`;
+      const text = `⚡ WHAT NOW? – Schluss mit Langeweile!\n\nWie wäre es heute damit?\n✨ ${item.titel}\n⏱️ ${item.dauer} | 💰 ${item.budget}\n\nBist du dabei? Lass uns das machen! 🙌\n📍 In der Nähe suchen: ${mapsUrl}`;
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: item.titel, text });
+          return;
+        } catch (_) {}
+      }
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    }
+
+    function triggerRandomIdea() {
+      const filtered = getFilteredActivities();
+      const pool = filtered.length > 0 ? filtered : getAllActivities();
+      const item = pool[Math.floor(Math.random() * pool.length)];
+      if (!item) return;
+
+      document.getElementById("random-modal-card").innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="emoji-circle">${item.emoji}</div>
+          <div>
+            <div style="font-size:11px;font-weight:800;color:var(--wn-primary);">🎲 ZUFALLS-TREFFER!</div>
+            <strong style="font-size:16px;">${item.titel}</strong>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--wn-muted);line-height:1.45;margin:10px 0;">${item.beschreibung}</p>
+        <div style="font-size:12px;font-weight:700;padding:10px;border-radius:12px;background:var(--wn-card);margin-bottom:12px;">
+          ⏱️ ${item.dauer} • 💶 ${item.budget} • 📍 ${item.ort}
+        </div>
+        <div class="action-row">
+          <button class="btn-outline" onclick="triggerRandomIdea()">🎲 Neu würfeln</button>
+          <button class="btn-primary" onclick="openMaps('${item.mapsQuery.replace(/'/g, "\\'")}')">📍 Maps</button>
+          <button class="btn-outline" style="flex:0;padding:10px 14px;" onclick="shareActivity(${item.id})">📤</button>
+        </div>
+      `;
+      document.getElementById("random-modal-wrapper").classList.remove("hidden");
+    }
+
+    function closeRandomModal() {
+      document.getElementById("random-modal-wrapper").classList.add("hidden");
+    }
+
+    function saveCustomActivity() {
+      const title = document.getElementById("add-title").value.trim();
+      if (!title) return;
+      const newItem = {
+        id: Date.now(),
+        titel: title,
+        kategorie: document.getElementById("add-cat").value,
+        dauer: document.getElementById("add-duration").value,
+        budget: "Kostenlos",
+        wetter: "Egal",
+        ort: document.getElementById("add-cat").value === "Zuhause" ? "Zuhause" : "In der Nähe",
+        zielgruppe: "Alle",
+        interesse: "Action",
+        mapsQuery: document.getElementById("add-maps").value.trim() || title,
+        emoji: document.getElementById("add-emoji").value.trim() || "💡",
+        beschreibung: document.getElementById("add-desc").value.trim() || "Eigene gespeicherte Freizeit-Idee.",
+        energieLevel: "Mittel"
+      };
+      state.custom.unshift(newItem);
+      localStorage.setItem("wn_custom", JSON.stringify(state.custom));
+      document.getElementById("add-title").value = "";
+      document.getElementById("add-desc").value = "";
+      document.getElementById("add-maps").value = "";
+      toggleAddModal(false);
+      renderAll();
+    }
+
+    let lastShake = 0;
+    function attachMotionListener() {
+      window.addEventListener("devicemotion", (e) => {
+        const acc = e.accelerationIncludingGravity;
+        if (!acc) return;
+        const total = Math.sqrt((acc.x || 0) ** 2 + (acc.y || 0) ** 2 + (acc.z || 0) ** 2);
+        if (total > 23 && Date.now() - lastShake > 1200) {
+          lastShake = Date.now();
+          triggerRandomIdea();
+        }
+      });
+    }
+
+    async function enableiPhoneShake() {
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+        try {
+          const res = await DeviceMotionEvent.requestPermission();
+          if (res === "granted") {
+            attachMotionListener();
+            document.getElementById("shake-status-badge").textContent = "Aktiv ✓";
+          }
+        } catch (_) {}
+      } else {
+        attachMotionListener();
+        document.getElementById("shake-status-badge").textContent = "Aktiv ✓";
+      }
+    }
+
+    // Erzeugt automatisch ein hochauflösendes PNG Apple-Touch-Icon ohne weißen Hintergrund für das iPhone Home-Screen-Icon
+    function generateAppleTouchIcon() {
+      try {
+        const c = document.createElement("canvas");
+        c.width = 512;
+        c.height = 512;
+        const ctx = c.getContext("2d");
+        const bg = ctx.createLinearGradient(0, 0, 512, 512);
+        bg.addColorStop(0, "#0B0F19");
+        bg.addColorStop(0.5, "#1E1B4B");
+        bg.addColorStop(1, "#311042");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, 512, 512);
+
+        const ring = ctx.createLinearGradient(96, 96, 416, 416);
+        ring.addColorStop(0, "#22D3EE");
+        ring.addColorStop(0.5, "#38BDF8");
+        ring.addColorStop(1, "#F472B6");
+        ctx.strokeStyle = ring;
+        ctx.lineWidth = 28;
+        ctx.beginPath();
+        ctx.arc(256, 256, 152, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const bolt = ctx.createLinearGradient(200, 114, 310, 398);
+        bolt.addColorStop(0, "#FEF08A");
+        bolt.addColorStop(0.5, "#FBBF24");
+        bolt.addColorStop(1, "#F97316");
+        ctx.fillStyle = bolt;
+        ctx.beginPath();
+        ctx.moveTo(284, 114);
+        ctx.lineTo(166, 265);
+        ctx.lineTo(244, 265);
+        ctx.lineTo(218, 398);
+        ctx.lineTo(346, 251);
+        ctx.lineTo(268, 251);
+        ctx.closePath();
+        ctx.fill();
+
+        document.getElementById("apple-touch-icon-link").href = c.toDataURL("image/png");
+      } catch (_) {}
+    }
+
+    function renderAll() {
+      updateTimeBanner();
+      renderCategoryChips();
+      renderMysteryCard();
+      renderActivities();
+    }
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+
+    applyTheme();
+    generateAppleTouchIcon();
+    attachMotionListener();
+    renderAll();
+  </script>
+</body>
+</html>
