@@ -15,7 +15,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.whatnow.app.ui.theme.WhatNowTheme
+
+@Composable
+fun WhatNowTheme(darkTheme: Boolean = false, content: @Composable () -> Unit) {
+    val colorScheme = if (darkTheme) darkColorScheme() else lightColorScheme()
+    MaterialTheme(colorScheme = colorScheme) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background,
+            content = content
+        )
+    }
+}
 
 class MainActivity : ComponentActivity() {
     private lateinit var shakeDetector: ShakeDetector
