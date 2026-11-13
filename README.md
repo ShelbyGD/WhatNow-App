@@ -1,1 +1,1 @@
-# WhatNow-App
+# WhatNow
